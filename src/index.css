@@ -60,7 +60,7 @@ input[type="number"] {
     @apply rounded-3xl border border-white/10 bg-white/[0.10] backdrop-blur-md shadow-xl;
   }
 
-  /* ===== INPUT ROW (FIXED CLEAN VERSION) ===== */
+  /* ===== INPUT ROW ===== */
   .summary-chip {
     @apply flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.05] p-4;
   }
@@ -85,18 +85,43 @@ input[type="number"] {
     text-align: right;
   }
 
+  /* ===== CHECKBOX ===== */
+  .summary-chip-checkbox {
+    @apply flex flex-col items-start gap-1 rounded-xl border border-white/10 bg-white/[0.05] p-4;
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 1rem;
+    color: rgb(203 213 225);
+    cursor: pointer;
+  }
+
+  .checkbox-row input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    accent-color: rgb(251 146 60);
+  }
+
+  .checkbox-note {
+    font-size: 0.8rem;
+    color: rgb(148 163 184);
+  }
+
   /* ===== RESULT CARDS ===== */
   .result-tile {
     @apply flex min-h-[88px] flex-col justify-center rounded-xl border p-4 bg-transparent;
   }
 
-  /* 🔥 orange outline */
+  /* orange outline */
   .result-tile-alert {
     @apply border-orange-400;
     box-shadow: 0 0 12px rgba(251, 146, 60, 0.25);
   }
 
-  /* 🔥 main result highlight */
+  /* highlighted main result */
   .result-tile-primary {
     @apply border-orange-400 bg-orange-500/20 shadow-lg;
     box-shadow: 0 0 18px rgba(251, 146, 60, 0.35);
@@ -125,15 +150,3 @@ input[type="number"] {
     text-align: left;
   }
 }
-
-/* .action-btn {
-  @apply rounded-xl px-5 py-2.5 text-sm font-semibold transition;
-}
-
-.action-btn-primary {
-  @apply border border-orange-400 bg-orange-500/20 text-orange-100 hover:bg-orange-500/30;
-}
-
-.action-btn-secondary {
-  @apply border border-white/10 bg-white/[0.06] text-slate-200 hover:bg-white/[0.10];
-} */

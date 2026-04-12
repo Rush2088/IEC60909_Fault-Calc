@@ -16,10 +16,26 @@ export default function Home() {
       return { result: null, error: validation.message };
     }
 
-    const { gridKA, hvKV, lvKV, txMVA, txZ, cFactor } = validation.parsed;
+    const {
+      gridKA,
+      hvKV,
+      lvKV,
+      txMVA,
+      txZ,
+      cFactor,
+      considerKFactor,
+    } = validation.parsed;
 
     return {
-      result: calculateFaultLevel(gridKA, hvKV, lvKV, txMVA, txZ, cFactor),
+      result: calculateFaultLevel(
+        gridKA,
+        hvKV,
+        lvKV,
+        txMVA,
+        txZ,
+        cFactor,
+        considerKFactor
+      ),
       error: "",
     };
   }, [values]);

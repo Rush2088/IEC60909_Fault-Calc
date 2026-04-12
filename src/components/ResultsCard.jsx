@@ -1,4 +1,8 @@
-import { HV_VOLTAGE_OPTIONS, LV_VOLTAGE_OPTIONS, C_FACTOR_OPTIONS } from "../utils/faultUtils";
+import {
+  HV_VOLTAGE_OPTIONS,
+  LV_VOLTAGE_OPTIONS,
+  C_FACTOR_OPTIONS,
+} from "../utils/faultUtils";
 
 function EditableCard({ label, unit, children }) {
   return (
@@ -10,10 +14,38 @@ function EditableCard({ label, unit, children }) {
   );
 }
 
+function CheckboxCard({ label, checked, onChange, note }) {
+  return (
+    <div className="summary-chip-checkbox">
+      <label className="checkbox-row">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+        />
+        <span>{label}</span>
+      </label>
+      <div className="checkbox-note">{note}</div>
+    </div>
+  );
+}
+
 function ResultTile({ label, value, highlight = false }) {
   return (
-    <div className={highlight ? "result-tile result-tile-primary" : "result-tile result-tile-alert"}>
-      <div className={highlight ? "mb-1 text-sm text-white/85" : "mb-1 text-sm text-slate-300"}>
+    <div
+      className={
+        highlight
+          ? "result-tile result-tile-primary"
+          : "result-tile result-tile-alert"
+      }
+    >
+      <div
+        className={
+          highlight
+            ? "mb-1 text-sm text-white/85"
+            : "mb-1 text-sm text-slate-300"
+        }
+      >
         {label}
       </div>
       <div
@@ -34,6 +66,9 @@ export default function ResultsCard({ values, setValues, result, error }) {
     setValues((prev) => ({ ...prev, [name]: value }));
   }
 
+  const kTDisplay =
+    result && result.K_T ? result.K_T.toFixed(4) : "1.0000";
+
   return (
     <section className="glass-card p-4 sm:p-5">
       <div className="mb-4 sm:mb-5">
@@ -52,7 +87,10 @@ export default function ResultsCard({ values, setValues, result, error }) {
       ) : null}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+
+        {/* LEFT COLUMN */}
         <div className="flex flex-col gap-3 sm:gap-4">
+
           <EditableCard label="Grid Fault Current" unit="kA">
             <input
               className="input-inline"
@@ -61,6 +99,21 @@ export default function ResultsCard({ values, setValues, result, error }) {
               value={values.gridKA}
               onChange={(e) => updateField("gridKA", e.target.value)}
             />
+          </EditableCard>
+
+          {/* ✅ MOVED HERE */}
+          <EditableCard label="C-Factor" unit="">
+            <select
+              className="input-inline"
+              value={values.cFactor}
+              onChange={(e) => updateField("cFactor", e.target.value)}
+            >
+              {C_FACTOR_OPTIONS.map((v) => (
+                <option key={v.value} value={v.value} className="bg-slate-900 text-white">
+                  {v.label}
+                </option>
+              ))}
+            </select>
           </EditableCard>
 
           <EditableCard label="HV Bus Voltage" unit="kV">
@@ -92,7 +145,9 @@ export default function ResultsCard({ values, setValues, result, error }) {
           </EditableCard>
         </div>
 
+        {/* RIGHT COLUMN */}
         <div className="flex flex-col gap-3 sm:gap-4">
+
           <EditableCard label="Transformer Rating" unit="MVA">
             <input
               className="input-inline"
@@ -113,19 +168,12 @@ export default function ResultsCard({ values, setValues, result, error }) {
             />
           </EditableCard>
 
-          <EditableCard label="C-Factor" unit="pu">
-            <select
-              className="input-inline"
-              value={values.cFactor}
-              onChange={(e) => updateField("cFactor", e.target.value)}
-            >
-              {C_FACTOR_OPTIONS.map((v) => (
-                <option key={v.value} value={v.value} className="bg-slate-900 text-white">
-                  {v.label}
-                </option>
-              ))}
-            </select>
-          </EditableCard>
+          <CheckboxCard
+            label="Consider Transformer K-Factor"
+            checked={values.considerKFactor}
+            onChange={(checked) => updateField("considerKFactor", checked)}
+            note={`Kₜ = ${kTDisplay}`}
+          />
         </div>
       </div>
 

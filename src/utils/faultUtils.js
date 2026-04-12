@@ -32,22 +32,33 @@ export const DEFAULT_VALUES = {
   gridKA: '50',
   hvKV: '330',
   lvKV: '33',
-  txMVA: '150',
-  txZ: '15',
+  txMVA: '180',
+  txZ: '14.5',
   cFactor: '1.1',
+  considerKFactor: true,
 };
 
 export function calculateFaultLevel(
-    gridKA, hvKV, lvKV, txMVA, txZ, cFactor = 1.1) {
+    gridKA, hvKV, lvKV, txMVA, txZ, cFactor = 1.1, considerKFactor = false) {
   const Sbase = 100e6;
 
   const I_HVbase = Sbase / (Math.sqrt(3) * hvKV * 1e3);
   const If_PU = (gridKA * 1e3) / I_HVbase;
   const Z_grid_pu = cFactor / If_PU;
 
-  const I_LVbase = Sbase / (Math.sqrt(3) * lvKV * 1e3);
-  const Z_TX_pu = (txZ * 0.01 / txMVA) * 100;
+  const Z_TX_pu_uncorrected = (txZ * 0.01 / txMVA) * 100;
+
+  let K_T = 1;
+
+  if (considerKFactor && Number(cFactor) === 1.1) {
+    const xT = txZ / 100;
+    K_T = (0.95 * cFactor) / (1 + 0.6 * xT);
+  }
+
+  const Z_TX_pu = K_T * Z_TX_pu_uncorrected;
   const Ztot_pu = Z_TX_pu + Z_grid_pu;
+
+  const I_LVbase = Sbase / (Math.sqrt(3) * lvKV * 1e3);
   const If_pu = cFactor / Ztot_pu;
   const IF_max = Math.round((If_pu * I_LVbase / 1e3) * 100) / 100;
 
@@ -56,11 +67,15 @@ export function calculateFaultLevel(
     If_PU,
     Z_grid_pu,
     I_LVbase,
+    K_T,
+    Z_TX_pu_uncorrected,
     Z_TX_pu,
     Ztot_pu,
     If_pu,
     IF_max,
     cFactor,
+    considerKFactor,
+    kFactorApplied: considerKFactor && Number(cFactor) === 1.1,
   };
 }
 
@@ -72,9 +87,17 @@ export function validateInputs(values) {
     txMVA: Number(values.txMVA),
     txZ: Number(values.txZ),
     cFactor: Number(values.cFactor),
+    considerKFactor: Boolean(values.considerKFactor),
   };
 
-  const valid = Object.values(parsed).every((v) => Number.isFinite(v) && v > 0);
+  const valid = [
+    parsed.gridKA,
+    parsed.hvKV,
+    parsed.lvKV,
+    parsed.txMVA,
+    parsed.txZ,
+    parsed.cFactor,
+  ].every((v) => Number.isFinite(v) && v > 0);
 
   if (!valid) {
     return {
