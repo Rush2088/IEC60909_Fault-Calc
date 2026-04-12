@@ -29,17 +29,9 @@ function ResultTile({ label, value, highlight = false }) {
   );
 }
 
-export default function ResultsCard({
-  values,
-  draftValues,
-  setDraftValues,
-  onCalculate,
-  onReset,
-  result,
-  error,
-}) {
+export default function ResultsCard({ values, setValues, result, error }) {
   function updateField(name, value) {
-    setDraftValues((prev) => ({ ...prev, [name]: value }));
+    setValues((prev) => ({ ...prev, [name]: value }));
   }
 
   return (
@@ -66,7 +58,7 @@ export default function ResultsCard({
               className="input-inline"
               type="number"
               step="any"
-              value={draftValues.gridKA}
+              value={values.gridKA}
               onChange={(e) => updateField("gridKA", e.target.value)}
             />
           </EditableCard>
@@ -74,7 +66,7 @@ export default function ResultsCard({
           <EditableCard label="HV Bus Voltage" unit="kV">
             <select
               className="input-inline"
-              value={draftValues.hvKV}
+              value={values.hvKV}
               onChange={(e) => updateField("hvKV", e.target.value)}
             >
               {HV_VOLTAGE_OPTIONS.map((v) => (
@@ -88,7 +80,7 @@ export default function ResultsCard({
           <EditableCard label="LV Bus Voltage" unit="kV">
             <select
               className="input-inline"
-              value={draftValues.lvKV}
+              value={values.lvKV}
               onChange={(e) => updateField("lvKV", e.target.value)}
             >
               {LV_VOLTAGE_OPTIONS.map((v) => (
@@ -106,7 +98,7 @@ export default function ResultsCard({
               className="input-inline"
               type="number"
               step="any"
-              value={draftValues.txMVA}
+              value={values.txMVA}
               onChange={(e) => updateField("txMVA", e.target.value)}
             />
           </EditableCard>
@@ -116,7 +108,7 @@ export default function ResultsCard({
               className="input-inline"
               type="number"
               step="any"
-              value={draftValues.txZ}
+              value={values.txZ}
               onChange={(e) => updateField("txZ", e.target.value)}
             />
           </EditableCard>
@@ -124,7 +116,7 @@ export default function ResultsCard({
           <EditableCard label="C-Factor" unit="pu">
             <select
               className="input-inline"
-              value={draftValues.cFactor}
+              value={values.cFactor}
               onChange={(e) => updateField("cFactor", e.target.value)}
             >
               {C_FACTOR_OPTIONS.map((v) => (
@@ -135,15 +127,6 @@ export default function ResultsCard({
             </select>
           </EditableCard>
         </div>
-      </div>
-
-      <div className="mt-4 flex gap-3">
-        <button type="button" className="action-btn action-btn-primary" onClick={onCalculate}>
-          Calculate
-        </button>
-        <button type="button" className="action-btn action-btn-secondary" onClick={onReset}>
-          Reset
-        </button>
       </div>
 
       <div className="divider" />
@@ -161,7 +144,7 @@ export default function ResultsCard({
         </div>
       ) : (
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-300">
-          Press Calculate to update the results.
+          Enter valid positive values. LV bus voltage must stay lower than HV bus voltage.
         </div>
       )}
     </section>

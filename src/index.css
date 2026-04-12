@@ -126,7 +126,7 @@ input[type="number"] {
   }
 }
 
-.action-btn {
+/* .action-btn {
   @apply rounded-xl px-5 py-2.5 text-sm font-semibold transition;
 }
 
@@ -136,4 +136,4 @@ input[type="number"] {
 
 .action-btn-secondary {
   @apply border border-white/10 bg-white/[0.06] text-slate-200 hover:bg-white/[0.10];
-}
+} */
