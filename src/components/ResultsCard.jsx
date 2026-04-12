@@ -181,9 +181,9 @@ export default function ResultsCard({ values, setValues, result, error }) {
 
       {result ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
-          <ResultTile label="Grid Impedance" value={`${result.Z_grid_pu.toFixed(4)} pu`} />
-          <ResultTile label="Transformer Impedance" value={`${result.Z_TX_pu.toFixed(4)} pu`} />
-          <ResultTile label="Total Impedance" value={`${result.Ztot_pu.toFixed(4)} pu`} />
+          <ResultTile label="Grid Z (100 MVA Base)" value={`${result.Z_grid_pu.toFixed(4)} pu`} />
+          <ResultTile label="Transformer Z (100 MVA Base)" value={`${result.Z_TX_pu.toFixed(4)} pu`} />
+          <ResultTile label="Total Z (100 MVA Base)" value={`${result.Ztot_pu.toFixed(4)} pu`} />
           <ResultTile
             label="LV Fault Current"
             value={`${result.IF_max.toFixed(2)} kA`}
