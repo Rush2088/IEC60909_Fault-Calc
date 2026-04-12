@@ -1,0 +1,169 @@
+import { HV_VOLTAGE_OPTIONS, LV_VOLTAGE_OPTIONS, C_FACTOR_OPTIONS } from "../utils/faultUtils";
+
+function EditableCard({ label, unit, children }) {
+  return (
+    <div className="summary-chip">
+      <div className="summary-label">{label}</div>
+      <div className="summary-input-wrap">{children}</div>
+      <span className="unit-base">{unit}</span>
+    </div>
+  );
+}
+
+function ResultTile({ label, value, highlight = false }) {
+  return (
+    <div className={highlight ? "result-tile result-tile-primary" : "result-tile result-tile-alert"}>
+      <div className={highlight ? "mb-1 text-sm text-white/85" : "mb-1 text-sm text-slate-300"}>
+        {label}
+      </div>
+      <div
+        className={
+          highlight
+            ? "text-2xl font-extrabold tracking-tight text-white sm:text-3xl"
+            : "text-xl font-extrabold tracking-tight text-slate-50 sm:text-2xl"
+        }
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+export default function ResultsCard({
+  values,
+  draftValues,
+  setDraftValues,
+  onCalculate,
+  onReset,
+  result,
+  error,
+}) {
+  function updateField(name, value) {
+    setDraftValues((prev) => ({ ...prev, [name]: value }));
+  }
+
+  return (
+    <section className="glass-card p-4 sm:p-5">
+      <div className="mb-4 sm:mb-5">
+        <h1 className="text-2xl font-extrabold tracking-tight text-white sm:text-[2rem]">
+          Fault Level Calculator
+        </h1>
+        <p className="mt-1 text-sm text-slate-300">
+          IEC60909 Short Circuit Calculator
+        </p>
+      </div>
+
+      {error ? (
+        <div className="mb-4 rounded-2xl border border-orange-400/40 bg-orange-500/10 px-3 py-2 text-sm font-semibold text-orange-200">
+          {error}
+        </div>
+      ) : null}
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+        <div className="flex flex-col gap-3 sm:gap-4">
+          <EditableCard label="Grid Fault Current" unit="kA">
+            <input
+              className="input-inline"
+              type="number"
+              step="any"
+              value={draftValues.gridKA}
+              onChange={(e) => updateField("gridKA", e.target.value)}
+            />
+          </EditableCard>
+
+          <EditableCard label="HV Bus Voltage" unit="kV">
+            <select
+              className="input-inline"
+              value={draftValues.hvKV}
+              onChange={(e) => updateField("hvKV", e.target.value)}
+            >
+              {HV_VOLTAGE_OPTIONS.map((v) => (
+                <option key={v.value} value={v.value} className="bg-slate-900 text-white">
+                  {v.label}
+                </option>
+              ))}
+            </select>
+          </EditableCard>
+
+          <EditableCard label="LV Bus Voltage" unit="kV">
+            <select
+              className="input-inline"
+              value={draftValues.lvKV}
+              onChange={(e) => updateField("lvKV", e.target.value)}
+            >
+              {LV_VOLTAGE_OPTIONS.map((v) => (
+                <option key={v.value} value={v.value} className="bg-slate-900 text-white">
+                  {v.label}
+                </option>
+              ))}
+            </select>
+          </EditableCard>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:gap-4">
+          <EditableCard label="Transformer Rating" unit="MVA">
+            <input
+              className="input-inline"
+              type="number"
+              step="any"
+              value={draftValues.txMVA}
+              onChange={(e) => updateField("txMVA", e.target.value)}
+            />
+          </EditableCard>
+
+          <EditableCard label="Transformer Impedance" unit="%">
+            <input
+              className="input-inline"
+              type="number"
+              step="any"
+              value={draftValues.txZ}
+              onChange={(e) => updateField("txZ", e.target.value)}
+            />
+          </EditableCard>
+
+          <EditableCard label="C-Factor" unit="pu">
+            <select
+              className="input-inline"
+              value={draftValues.cFactor}
+              onChange={(e) => updateField("cFactor", e.target.value)}
+            >
+              {C_FACTOR_OPTIONS.map((v) => (
+                <option key={v.value} value={v.value} className="bg-slate-900 text-white">
+                  {v.label}
+                </option>
+              ))}
+            </select>
+          </EditableCard>
+        </div>
+      </div>
+
+      <div className="mt-4 flex gap-3">
+        <button type="button" className="action-btn action-btn-primary" onClick={onCalculate}>
+          Calculate
+        </button>
+        <button type="button" className="action-btn action-btn-secondary" onClick={onReset}>
+          Reset
+        </button>
+      </div>
+
+      <div className="divider" />
+
+      {result ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+          <ResultTile label="Grid Impedance" value={`${result.Z_grid_pu.toFixed(4)} pu`} />
+          <ResultTile label="Transformer Impedance" value={`${result.Z_TX_pu.toFixed(4)} pu`} />
+          <ResultTile label="Total Impedance" value={`${result.Ztot_pu.toFixed(4)} pu`} />
+          <ResultTile
+            label="LV Fault Current"
+            value={`${result.IF_max.toFixed(2)} kA`}
+            highlight
+          />
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-300">
+          Press Calculate to update the results.
+        </div>
+      )}
+    </section>
+  );
+}
