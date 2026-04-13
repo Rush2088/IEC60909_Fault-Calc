@@ -48,14 +48,14 @@ export function calculateFaultLevel(
 
   const Z_TX_pu_uncorrected = (txZ * 0.01 / txMVA) * 100;
 
-  let K_T = 1;
+  // Always calculate and display IEC60909 transformer correction factor
+  const xT = txZ / 100;
+  const K_T = (0.95 * cFactor) / (1 + 0.6 * xT);
 
-  if (considerKFactor && Number(cFactor) === 1.1) {
-    const xT = txZ / 100;
-    K_T = (0.95 * cFactor) / (1 + 0.6 * xT);
-  }
+  // Only apply K_T to transformer impedance when checkbox is ticked
+  const K_T_applied = considerKFactor ? K_T : 1;
 
-  const Z_TX_pu = K_T * Z_TX_pu_uncorrected;
+  const Z_TX_pu = K_T_applied * Z_TX_pu_uncorrected;
   const Ztot_pu = Z_TX_pu + Z_grid_pu;
 
   const I_LVbase = Sbase / (Math.sqrt(3) * lvKV * 1e3);
@@ -67,7 +67,13 @@ export function calculateFaultLevel(
     If_PU,
     Z_grid_pu,
     I_LVbase,
+
+    // Always show calculated IEC Kt
     K_T,
+
+    // Applied Kt used in actual LV fault current calculation
+    K_T_applied,
+
     Z_TX_pu_uncorrected,
     Z_TX_pu,
     Ztot_pu,
@@ -75,7 +81,7 @@ export function calculateFaultLevel(
     IF_max,
     cFactor,
     considerKFactor,
-    kFactorApplied: considerKFactor && Number(cFactor) === 1.1,
+    kFactorApplied: considerKFactor,
   };
 }
 
