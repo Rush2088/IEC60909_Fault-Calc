@@ -24,6 +24,10 @@ export default function Home() {
       txZ,
       cFactor,
       considerKFactor,
+      addInverterContribution,
+      inverterMVA,
+      inverterCount,
+      inverterMaxCurrentFactor,
     } = validation.parsed;
 
     return {
@@ -34,7 +38,11 @@ export default function Home() {
         txMVA,
         txZ,
         cFactor,
-        considerKFactor
+        considerKFactor,
+        addInverterContribution,
+        inverterMVA,
+        inverterCount,
+        inverterMaxCurrentFactor
       ),
       error: "",
     };
@@ -42,7 +50,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen px-4 py-4 sm:px-6 sm:py-6">
-      <div className="mx-auto max-w-[760px]">
+      <div className="mx-auto max-w-[920px]">
         <ResultsCard
           values={values}
           setValues={setValues}

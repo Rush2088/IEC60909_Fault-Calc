@@ -25,7 +25,7 @@ function CheckboxCard({ label, checked, onChange, note }) {
         />
         <span>{label}</span>
       </label>
-      <div className="checkbox-note">{note}</div>
+      {note ? <div className="checkbox-note">{note}</div> : null}
     </div>
   );
 }
@@ -69,6 +69,8 @@ export default function ResultsCard({ values, setValues, result, error }) {
   const kTDisplay =
     result && result.K_T ? result.K_T.toFixed(4) : "1.0000";
 
+  const lvVoltageLabel = values.lvKV || "LV";
+
   return (
     <section className="glass-card p-4 sm:p-5">
       <div className="mb-4 sm:mb-5">
@@ -87,10 +89,7 @@ export default function ResultsCard({ values, setValues, result, error }) {
       ) : null}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
-
-        {/* LEFT COLUMN */}
         <div className="flex flex-col gap-3 sm:gap-4">
-
           <EditableCard label="Grid Fault Current" unit="kA">
             <input
               className="input-inline"
@@ -101,7 +100,6 @@ export default function ResultsCard({ values, setValues, result, error }) {
             />
           </EditableCard>
 
-          {/* ✅ MOVED HERE */}
           <EditableCard label="C-Factor" unit="">
             <select
               className="input-inline"
@@ -145,9 +143,7 @@ export default function ResultsCard({ values, setValues, result, error }) {
           </EditableCard>
         </div>
 
-        {/* RIGHT COLUMN */}
         <div className="flex flex-col gap-3 sm:gap-4">
-
           <EditableCard label="Transformer Rating" unit="MVA">
             <input
               className="input-inline"
@@ -174,19 +170,80 @@ export default function ResultsCard({ values, setValues, result, error }) {
             onChange={(checked) => updateField("considerKFactor", checked)}
             note={`Kₜ = ${kTDisplay}`}
           />
+
+          <CheckboxCard
+            label="Add Inverter Contribution"
+            checked={values.addInverterContribution}
+            onChange={(checked) => updateField("addInverterContribution", checked)}
+            note={`Applied at ${lvVoltageLabel} kV bus`}
+          />
+
+          {values.addInverterContribution && (
+            <>
+              <EditableCard label="Inverter Rating" unit="MVA">
+                <input
+                  className="input-inline"
+                  type="number"
+                  step="any"
+                  value={values.inverterMVA}
+                  onChange={(e) => updateField("inverterMVA", e.target.value)}
+                />
+              </EditableCard>
+
+              <EditableCard label="No. of Inverters" unit="">
+                <input
+                  className="input-inline"
+                  type="number"
+                  step="1"
+                  min="1"
+                  value={values.inverterCount}
+                  onChange={(e) => updateField("inverterCount", e.target.value)}
+                />
+              </EditableCard>
+
+              <EditableCard label="FRT Max Current Factor" unit="">
+                <input
+                  className="input-inline"
+                  type="number"
+                  step="any"
+                  value={values.inverterMaxCurrentFactor}
+                  onChange={(e) =>
+                    updateField("inverterMaxCurrentFactor", e.target.value)
+                  }
+                />
+              </EditableCard>
+            </>
+          )}
         </div>
       </div>
 
       <div className="divider" />
 
       {result ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
-          <ResultTile label="Grid Z (100 MVA Base)" value={`${result.Z_grid_pu.toFixed(4)} pu`} />
-          <ResultTile label="Transformer Z (100 MVA Base)" value={`${result.Z_TX_pu.toFixed(4)} pu`} />
-          <ResultTile label="Total Z (100 MVA Base)" value={`${result.Ztot_pu.toFixed(4)} pu`} />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 sm:gap-4">
           <ResultTile
-            label="LV Fault Current"
-            value={`${result.IF_max.toFixed(2)} kA`}
+            label="Grid Z (100 MVA Base)"
+            value={`${result.Z_grid_pu.toFixed(4)} pu`}
+          />
+          <ResultTile
+            label="Transformer Z (100 MVA Base)"
+            value={`${result.Z_TX_pu.toFixed(4)} pu`}
+          />
+          <ResultTile
+            label="Total Z (100 MVA Base)"
+            value={`${result.Ztot_pu.toFixed(4)} pu`}
+          />
+          <ResultTile
+            label={`Grid Contribution @ ${lvVoltageLabel} kV`}
+            value={`${result.gridContributionKA.toFixed(2)} kA`}
+          />
+          <ResultTile
+            label={`Inverter Contribution @ ${lvVoltageLabel} kV`}
+            value={`${result.inverterContributionKA.toFixed(2)} kA`}
+          />
+          <ResultTile
+            label={`Total Fault Current @ ${lvVoltageLabel} kV`}
+            value={`${result.totalFaultCurrentKA.toFixed(2)} kA`}
             highlight
           />
         </div>

@@ -36,10 +36,20 @@ export const DEFAULT_VALUES = {
   txZ: '14.5',
   cFactor: '1.1',
   considerKFactor: false,
+  addInverterContribution: false,
+  inverterMVA: '2.4',
+  inverterCount: '30',
+  inverterMaxCurrentFactor: '1.2',
 };
 
+export function inverterContribution(S, V, num, maxI) {
+  return num * S / (Math.sqrt(3) * V) * maxI;
+}
+
 export function calculateFaultLevel(
-    gridKA, hvKV, lvKV, txMVA, txZ, cFactor = 1.1, considerKFactor = false) {
+    gridKA, hvKV, lvKV, txMVA, txZ, cFactor = 1.1, considerKFactor = false,
+    addInverterContribution = false, inverterMVA = 0, inverterCount = 0,
+    inverterMaxCurrentFactor = 0) {
   const Sbase = 100e6;
 
   const I_HVbase = Sbase / (Math.sqrt(3) * hvKV * 1e3);
@@ -48,11 +58,8 @@ export function calculateFaultLevel(
 
   const Z_TX_pu_uncorrected = (txZ * 0.01 / txMVA) * 100;
 
-  // Always calculate and display IEC60909 transformer correction factor
   const xT = txZ / 100;
   const K_T = (0.95 * cFactor) / (1 + 0.6 * xT);
-
-  // Only apply K_T to transformer impedance when checkbox is ticked
   const K_T_applied = considerKFactor ? K_T : 1;
 
   const Z_TX_pu = K_T_applied * Z_TX_pu_uncorrected;
@@ -60,27 +67,45 @@ export function calculateFaultLevel(
 
   const I_LVbase = Sbase / (Math.sqrt(3) * lvKV * 1e3);
   const If_pu = cFactor / Ztot_pu;
-  const IF_max = Math.round((If_pu * I_LVbase / 1e3) * 100) / 100;
+  const gridContributionKA = Math.round((If_pu * I_LVbase / 1e3) * 100) / 100;
+
+  const inverterContributionKA = addInverterContribution ?
+      Math.round(
+          inverterContribution(
+              inverterMVA,
+              lvKV,
+              inverterCount,
+              inverterMaxCurrentFactor,
+              ) *
+              100,
+          ) /
+          100 :
+      0;
+
+  const totalFaultCurrentKA =
+      Math.round((gridContributionKA + inverterContributionKA) * 100) / 100;
 
   return {
     I_HVbase,
     If_PU,
     Z_grid_pu,
     I_LVbase,
-
-    // Always show calculated IEC Kt
     K_T,
-
-    // Applied Kt used in actual LV fault current calculation
     K_T_applied,
-
     Z_TX_pu_uncorrected,
     Z_TX_pu,
     Ztot_pu,
     If_pu,
-    IF_max,
+    IF_max: gridContributionKA,
+    gridContributionKA,
+    inverterContributionKA,
+    totalFaultCurrentKA,
     cFactor,
     considerKFactor,
+    addInverterContribution,
+    inverterMVA,
+    inverterCount,
+    inverterMaxCurrentFactor,
     kFactorApplied: considerKFactor,
   };
 }
@@ -94,9 +119,13 @@ export function validateInputs(values) {
     txZ: Number(values.txZ),
     cFactor: Number(values.cFactor),
     considerKFactor: Boolean(values.considerKFactor),
+    addInverterContribution: Boolean(values.addInverterContribution),
+    inverterMVA: Number(values.inverterMVA),
+    inverterCount: Number(values.inverterCount),
+    inverterMaxCurrentFactor: Number(values.inverterMaxCurrentFactor),
   };
 
-  const valid = [
+  const baseValid = [
     parsed.gridKA,
     parsed.hvKV,
     parsed.lvKV,
@@ -105,10 +134,10 @@ export function validateInputs(values) {
     parsed.cFactor,
   ].every((v) => Number.isFinite(v) && v > 0);
 
-  if (!valid) {
+  if (!baseValid) {
     return {
       valid: false,
-      message: 'Please enter valid positive values for all parameters.',
+      message: 'Please enter valid positive values for all base parameters.',
       parsed,
     };
   }
@@ -119,6 +148,23 @@ export function validateInputs(values) {
       message: 'LV bus voltage should be lower than HV bus voltage.',
       parsed,
     };
+  }
+
+  if (parsed.addInverterContribution) {
+    const inverterValid = [
+      parsed.inverterMVA,
+      parsed.inverterCount,
+      parsed.inverterMaxCurrentFactor,
+    ].every((v) => Number.isFinite(v) && v > 0);
+
+    if (!inverterValid) {
+      return {
+        valid: false,
+        message:
+            'Please enter valid positive values for inverter rating, number of inverters, and FRT max current factor.',
+        parsed,
+      };
+    }
   }
 
   return {valid: true, message: '', parsed};
